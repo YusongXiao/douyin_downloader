@@ -1,17 +1,27 @@
-# Douyin Downloader
+# 📥 Douyin Downloader
 
-抖音视频 / 图集 / 动图批量下载器。通过已部署的 API 解析抖音分享链接并下载。
+抖音视频 / 图集 / 动图批量下载器。✨
 
-## 环境变量
+> [!IMPORTANT]
+> **必须先部署 [douyin_phaser](https://github.com/YusongXiao/douyin_phaser) 得到 API 地址才能使用本程序。**
+
+## 🚀 快速开始
+
+1. 部署 [douyin_phaser](https://github.com/YusongXiao/douyin_phaser) 服务。
+2. 获取部署后的 API 地址。
+3. 设置环境变量（见下表）。
+4. 运行下载脚本。
+
+## ⚙️ 环境变量
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `DOUYIN_MEDIA_API` | 媒体提取 API 地址 | 可参考 https://github.com/YusongXiao/douyin_phaser |
-| `DOUYIN_USER_API` | 用户主页 API 地址 | 可参考 https://github.com/YusongXiao/douyin_phaser |
+| `DOUYIN_MEDIA_API` | 🎬 媒体提取 API 地址 | - |
+| `DOUYIN_USER_API` | 👤 用户主页 API 地址 | - |
 
-## 使用方法
+## 📖 使用方法
 
-### 下载单个作品
+### 🔗 下载单个作品
 
 ```bash
 python douyin_downloader.py https://v.douyin.com/y2JACyhjdK8/
@@ -19,13 +29,13 @@ python douyin_downloader.py https://www.douyin.com/video/7606413230298820595
 python douyin_downloader.py https://www.douyin.com/note/7606955181091438309
 ```
 
-### 下载用户所有作品
+### 👥 下载用户所有作品
 
 ```bash
 python douyin_downloader.py https://www.douyin.com/user/MS4wLjABAAAA...
 ```
 
-## 下载目录结构
+## 📂 下载目录结构
 
 ```
 downloads/
@@ -42,7 +52,12 @@ downloads/
         └── 2.webp
 ```
 
-## 依赖
+## 🛠️ 依赖
 
 - Python 3.6+
-- 无第三方依赖
+- 🐍 无第三方依赖 (仅使用标准库)
+
+## 📄 协议
+
+本项目采用 [MIT](LICENSE) 协议开源。
+
