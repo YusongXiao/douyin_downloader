@@ -157,12 +157,13 @@ def download_file(url: str, dest: Path) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def download_single_work(share_url: str, base_dir: Path = None) -> bool:
+def download_single_work(share_url: str, base_dir: Path = None, index_prefix: str = "") -> bool:
     """
     解析并下载单个作品。
 
     如果 base_dir 为 None，使用 ./downloads/杂/ 作为基础目录，文件名为 作者名-标题。
     如果指定了 base_dir，直接在 base_dir 下按标题组织文件。
+    index_prefix: 可选的序号前缀，如 "1 "，用于区分同名作品。
     """
     print(f"\n{'='*60}")
     print(f"解析作品: {share_url}")
@@ -187,7 +188,7 @@ def download_single_work(share_url: str, base_dir: Path = None) -> bool:
         name_prefix = f"{author}-{title}"
     else:
         work_base = base_dir
-        name_prefix = title
+        name_prefix = f"{index_prefix}{title}"
 
     print(f"  作者: {author}")
     print(f"  标题: {title}")
@@ -307,7 +308,7 @@ def download_user_works(user_url: str) -> bool:
             continue
 
         try:
-            ok = download_single_work(share_url, base_dir=user_dir)
+            ok = download_single_work(share_url, base_dir=user_dir, index_prefix=f"{idx} ")
             if ok:
                 success += 1
             else:
