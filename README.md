@@ -41,13 +41,18 @@ python douyin_downloader.py https://www.douyin.com/user/MS4wLjABAAAA...
 downloads/
 ├── 杂/                                # 单个作品
 │   ├── 作者名-视频标题.mp4
+│   ├── 作者名-视频标题_cover.jpeg      # 视频封面
 │   └── 作者名-图集标题/                # 多图/动图
 │       ├── 1.webp
 │       ├── 2.webp
-│       └── 2.mp4
+│       ├── 2.mp4
+│       └── cover.jpeg                 # 图集封面
 └── 用户名/                            # 用户主页批量下载
-    ├── 视频标题.mp4
-    └── 图集标题/
+    ├── 1 视频标题.mp4
+    ├── cover/                         # 所有作品封面
+    │   ├── 1.jpeg
+    │   └── 2.jpeg
+    └── 2 图集标题/
         ├── 1.webp
         └── 2.webp
 ```

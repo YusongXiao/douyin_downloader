@@ -57,6 +57,21 @@ def sanitize_filename(name: str) -> str:
     return name or "untitled"
 
 
+def _unique_path(path: Path) -> Path:
+    """如果路径已存在，自动追加 (2)、(3) 等后缀以避免冲突"""
+    if not path.exists():
+        return path
+    stem = path.stem
+    suffix = path.suffix
+    parent = path.parent
+    counter = 2
+    while True:
+        new_path = parent / f"{stem}({counter}){suffix}"
+        if not new_path.exists():
+            return new_path
+        counter += 1
+
+
 def api_request(base_url: str, target_url: str, timeout: int) -> dict:
     """调用 API 并返回 JSON 响应"""
     api_url = f"{base_url}/?url={urllib.parse.quote(target_url, safe='')}"
@@ -157,13 +172,14 @@ def download_file(url: str, dest: Path) -> bool:
 # ---------------------------------------------------------------------------
 
 
-def download_single_work(share_url: str, base_dir: Path = None, index_prefix: str = "") -> bool:
+def download_single_work(share_url: str, base_dir: Path = None, index_prefix: str = "", cover_index: int = 0) -> bool:
     """
     解析并下载单个作品。
 
     如果 base_dir 为 None，使用 ./downloads/杂/ 作为基础目录，文件名为 作者名-标题。
     如果指定了 base_dir，直接在 base_dir 下按标题组织文件。
     index_prefix: 可选的序号前缀，如 "1 "，用于区分同名作品。
+    cover_index: 用户主页模式下封面的序号（从 1 开始）。
     """
     print(f"\n{'='*60}")
     print(f"解析作品: {share_url}")
@@ -176,6 +192,7 @@ def download_single_work(share_url: str, base_dir: Path = None, index_prefix: st
     info = data["data"]
     title = sanitize_filename(info.get("title", "untitled"))
     author = sanitize_filename(info.get("author", "unknown"))
+    cover_url = info.get("cover", "")
     items = info.get("items", [])
 
     if not items:
@@ -194,6 +211,8 @@ def download_single_work(share_url: str, base_dir: Path = None, index_prefix: st
     print(f"  标题: {title}")
     print(f"  类型: {info.get('type', 'unknown')}")
     print(f"  文件数: {len(items)}")
+    if cover_url:
+        print(f"  封面: {cover_url[:80]}...")
 
     # 仅一个 video 项 → 直接存为 作者名-title.mp4
     if len(items) == 1 and items[0]["type"] == "video":
@@ -201,11 +220,28 @@ def download_single_work(share_url: str, base_dir: Path = None, index_prefix: st
         video_url = item.get("video_url")
         if video_url:
             dest = work_base / f"{name_prefix}.mp4"
+            if base_dir is None:
+                dest = _unique_path(dest)
             download_file(video_url, dest)
+        # 下载封面
+        if cover_url:
+            cover_ext = _guess_ext(cover_url, default=".jpeg")
+            if base_dir is not None and cover_index > 0:
+                cover_dest = base_dir / "cover" / f"{cover_index}{cover_ext}"
+            else:
+                cover_dest = work_base / f"{name_prefix}_cover{cover_ext}"
+                cover_dest = _unique_path(cover_dest)
+            download_file(cover_url, cover_dest)
         return True
 
     # 多个元素 → 建子文件夹 作者名-title/
     work_dir = work_base / name_prefix
+    if base_dir is None:
+        # 杂模式下如果文件夹已存在，自动追加后缀
+        counter = 2
+        while work_dir.exists():
+            work_dir = work_base / f"{name_prefix}({counter})"
+            counter += 1
 
     for idx, item in enumerate(items, 1):
         item_type = item.get("type", "unknown")
@@ -239,6 +275,15 @@ def download_single_work(share_url: str, base_dir: Path = None, index_prefix: st
 
         else:
             print(f"  ⚠ 未知类型: {item_type}，跳过")
+
+    # 下载封面（多文件作品）
+    if cover_url:
+        cover_ext = _guess_ext(cover_url, default=".jpeg")
+        if base_dir is not None and cover_index > 0:
+            cover_dest = base_dir / "cover" / f"{cover_index}{cover_ext}"
+        else:
+            cover_dest = work_dir / f"cover{cover_ext}"
+        download_file(cover_url, cover_dest)
 
     return True
 
@@ -308,7 +353,7 @@ def download_user_works(user_url: str) -> bool:
             continue
 
         try:
-            ok = download_single_work(share_url, base_dir=user_dir, index_prefix=f"{idx} ")
+            ok = download_single_work(share_url, base_dir=user_dir, index_prefix=f"{idx} ", cover_index=idx)
             if ok:
                 success += 1
             else:
